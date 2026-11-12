@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="تجربة الرؤية">
+<meta name="theme-color" content="#07142b">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>عيون طيبة – تجربة الرؤية</title>
+<style>
+@font-face{font-family:"Tajawal";src:url("fonts/Tajawal-Regular.ttf") format("truetype");font-weight:400;font-style:normal}@font-face{font-family:"Tajawal";src:url("fonts/Tajawal-Bold.ttf") format("truetype");font-weight:700;font-style:normal}
+:root{color-scheme:dark;box-sizing:border-box}
+html,body{height:100%;margin:0;background:#000;color:#fff;font-family:"Tajawal",system-ui,"Segoe UI",Tahoma,sans-serif}
+#menu{max-width:520px;margin:0 auto;padding:calc(24px + env(safe-area-inset-top,0px)) 20px 30px}
+h1{font-size:1.4rem;margin:0 0 6px}
+p{line-height:1.8;color:#cfd6dd;margin:8px 0}
+.box{background:#161b22;border:1px solid #2b333d;border-radius:14px;padding:14px;margin:14px 0}
+label{display:block;margin:8px 0}
+input[type=file]{width:100%;color:#fff}
+button{font:inherit;background:#2f81f7;color:#fff;border:0;border-radius:12px;padding:14px 18px;width:100%;font-size:1.1rem;margin-top:8px}
+button.alt{background:#30363d}
+#stage{display:none;position:fixed;inset:0;background:#000;flex-direction:row;direction:ltr}
+#stage.on{display:flex}
+.eye{flex:1;position:relative;overflow:hidden}
+#stage.single .eye:nth-child(2){display:none}
+.eye canvas{width:100%;height:100%;display:block;transition:filter 2.5s;filter:blur(0px) sepia(0) contrast(1) saturate(1) brightness(1)}
+.fx{position:absolute;inset:0;opacity:0;transition:opacity 2.5s;pointer-events:none}
+.haze{background:radial-gradient(circle at 50% 45%,rgba(255,244,210,.55),rgba(225,195,130,.5) 75%);mix-blend-mode:screen}
+.tunnel{background:radial-gradient(circle at 50% 50%,transparent 11%,rgba(0,0,0,.97) 36%)}
+.macula{background:radial-gradient(circle at 50% 50%,rgba(15,15,15,.97) 0,rgba(35,35,35,.9) 13%,transparent 27%)}
+.curtain{position:absolute;left:-10%;right:-10%;top:-12%;height:62%;background:#000;border-radius:0 0 55% 45%;filter:blur(12px);transform:translateY(-110%);transition:transform 5s ease-out;pointer-events:none}
+.floaters span{position:absolute;width:3.5vh;height:1.4vh;border-radius:50%;background:rgba(10,10,10,.65);filter:blur(2px);animation:fl 7s ease-in-out infinite alternate}
+@keyframes fl{to{transform:translate(6vw,4vh) rotate(40deg)}}
+#stage.cat canvas{filter:blur(5px) sepia(.7) contrast(.55) saturate(.6) brightness(1.1)}
+#stage.cat .haze{opacity:1}
+#stage.glau canvas{filter:blur(0px) sepia(0) contrast(.9) saturate(.6) brightness(.95)}
+#stage.glau .tunnel{opacity:1}
+#stage.ret canvas{filter:blur(1.5px) sepia(0) contrast(.85) saturate(1) brightness(1)}
+#stage.ret .curtain{transform:translateY(0)}
+#stage.ret .floaters{opacity:1}
+#stage.mac canvas{filter:blur(1px) sepia(0) contrast(1) saturate(.8) brightness(1)}
+#stage.mac .macula{opacity:1}
+.cap{position:absolute;bottom:7%;left:50%;transform:translateX(-50%);direction:rtl;background:rgba(0,0,0,.55);padding:.6vh 2vw;border-radius:2vh;font-size:3.4vh;white-space:nowrap;z-index:5}
+#end{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;background:#000;z-index:9;text-align:center;padding:20px;direction:rtl}
+#end.on{display:flex}
+#end button{max-width:280px}
+#cd{position:fixed;inset:0;display:none;background:#000;z-index:20;direction:rtl;text-align:center}#cd .h{flex:1;display:flex;align-items:center;justify-content:center;font-size:4vh;line-height:1.7}#cd b{font-size:13vh}#cd .h{position:relative}#cd .top{position:absolute;top:6%;left:5%;right:5%;font-size:3.2vh;line-height:1.6;color:#ffd27a}#fin{position:fixed;inset:0;display:none;background:#000;z-index:21;direction:rtl;text-align:center}#fin .h{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh}#fin .m{font-size:6vh;font-weight:700;color:#ffd27a}#fin .n{font-size:4.5vh}#fin .t{font-size:4.2vh;line-height:1.9;padding:0 7%}
+#pick{position:fixed;inset:0;background:#000;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4vh;direction:rtl;text-align:center}#pick .pt{font-size:5vh;font-weight:700;color:#ffd27a}#pick .po{font-size:3vh;opacity:.8}#pick .pb{display:flex;gap:4vw}#pick button{font:inherit;font-size:4vh;padding:4vh 5vw;border-radius:3vh;border:0;background:#2f81f7;color:#fff}#pick #bC{background:#7a3cc9}.logo{position:absolute;top:6%;height:14%;max-width:26%;object-fit:contain;z-index:6;pointer-events:none}
+#cd,#fin,#pick,#opts{background:radial-gradient(ellipse at 50% 30%,#123a6b 0,#07142b 72%);color:#fff}
+#opts{position:fixed;inset:0;display:none;z-index:32;flex-direction:column;align-items:center;justify-content:center;gap:3vh;direction:rtl;text-align:center}
+.lgc{height:16vh;max-width:40vw;object-fit:contain}.lgc.big{height:20vh}
+#pick .pt{font-size:6vh;font-weight:700;color:#fff}#pick .ps{font-size:3vh;color:#2ee6c5;margin-top:-1vh}#pick .po{font-size:2.6vh;opacity:.7}
+.pb{display:flex;gap:3vw;justify-content:center}
+.card{font:inherit;border:0;border-radius:2.6vh;color:#fff;padding:2.6vh 3vw;min-width:26vw;display:flex;flex-direction:column;align-items:center;gap:.6vh;box-shadow:0 1vh 3vh rgba(0,0,0,.45);transition:transform .15s}
+.card:active{transform:scale(.97)}.card .ic{font-size:6vh;line-height:1.2}.card .tt{font-size:3.6vh;font-weight:700}.card .ds{font-size:2.2vh;opacity:.85}
+#pick #bV{background:linear-gradient(135deg,#2563eb,#1e40af)}#pick #bC{background:linear-gradient(135deg,#14b8a6,#0f766e)}
+#opts #bR{background:linear-gradient(135deg,#14b8a6,#0f766e)}#opts #bX{background:transparent;border:2px solid rgba(255,255,255,.5);box-shadow:none}
+#opts .ot{font-size:6vh;font-weight:700;color:#f5c451}#opts .os{font-size:3vh;opacity:.85}
+#cd .h{flex-direction:column;gap:1.6vh;padding:3vh 3vw;box-sizing:border-box}
+#cd .badge{background:rgba(255,255,255,.08);border:1px solid rgba(245,196,81,.5);border-radius:2vh;padding:1.2vh 1.6vw;max-width:90%}
+#cd .bt{font-size:2.4vh;font-weight:700;color:#f5c451;margin-bottom:.8vh}
+#cd .chips{display:flex;flex-wrap:wrap;gap:.7vh .6vw;justify-content:center}
+#cd .chip{font-size:1.9vh;padding:.3vh 1vw;border-radius:99px;border:1px solid currentColor;line-height:1.5}
+.c0{color:#f5c451}.c1{color:#2ee6c5}.c2{color:#ff7a7a}.c3{color:#b48cff}
+#cd .ring{position:relative;width:24vh;height:24vh;display:flex;align-items:center;justify-content:center}
+#cd .ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+#cd .rb{fill:none;stroke:rgba(255,255,255,.12);stroke-width:7}
+#cd .rp{fill:none;stroke:#2ee6c5;stroke-width:7;stroke-linecap:round}
+#cd .ring b{font-size:11vh;font-weight:700;color:#fff;animation:pl 1s ease-in-out infinite}
+@keyframes pl{50%{transform:scale(1.08)}}
+#cd .ct{font-size:3.2vh;font-weight:700}
+#cd .cm{position:absolute;bottom:2vh;font-size:1.8vh;opacity:.55}
+#fin .h{flex-direction:column;gap:2vh;padding:0 6%}
+#fin .thx{font-size:6.4vh;font-weight:700;color:#f5c451;text-shadow:0 0 3vh rgba(245,196,81,.45)}
+#fin .sep{width:14vh;height:.5vh;border-radius:9px;background:linear-gradient(90deg,transparent,#f5c451,transparent)}
+#fin .org{font-size:3.6vh;opacity:.95}
+#fin .qm{font-size:12vh;line-height:.6;color:#f5c451;opacity:.8;height:6vh}
+#fin .t{font-size:3.7vh;line-height:2;font-weight:500;padding:0 4%}
+.logo{filter:brightness(0) invert(1) drop-shadow(0 0 6px rgba(0,0,0,.6))}
+#cd .h.cdp{display:block;padding:0;gap:0;position:relative;overflow:hidden;background:#0b3d33}
+#cd .bgb{position:absolute;inset:-6%;background:url(countdown_bg.jpg) center/cover;filter:blur(16px) brightness(.85)}
+#cd .sq{position:relative;height:100%;aspect-ratio:1/1;margin:0 auto;background:#d7f1ec url(countdown_bg.jpg) center/100% 100% no-repeat}
+#cd .zr{position:absolute;left:85.7%;top:26%;width:27vh;height:27vh;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center}
+#cd .zr svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+#cd .zr .rb{fill:rgba(2,40,50,.25);stroke:rgba(255,255,255,.3);stroke-width:6}
+#cd .zr .rp{fill:none;stroke:#e53935;stroke-width:6;stroke-linecap:round;filter:drop-shadow(0 0 .6vh rgba(229,57,53,.7))}
+#cd .zr b{font-size:9vh;font-weight:700;color:#fff;text-shadow:0 .3vh 1.6vh rgba(0,60,70,.85);animation:pl 1s ease-in-out infinite}
+#cd .zp{position:absolute;left:8%;right:8%;top:44%;height:25%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4vh;text-align:center}
+#cd .zp .bt{font-size:3vh;font-weight:700;color:#064e3b;margin:0}
+#cd .zp .chip{font-size:2.2vh;background:rgba(255,255,255,.65);padding:.4vh 1.4vh}
+#cd .zp .c0{color:#a16207}#cd .zp .c1{color:#0f766e}#cd .zp .c2{color:#b91c1c}#cd .zp .c3{color:#6d28d9}
+#cd .zl{position:absolute;left:24%;width:52%;top:75.6%;height:8.4%;display:flex;align-items:center;justify-content:center;font-size:3.6vh;font-weight:700;color:#ffe08a}
+#cd .zc{position:absolute;left:0;right:0;bottom:1.2%;text-align:center;font-size:1.6vh;color:#fff;opacity:.7}
+#cd .zp .chips{display:grid;grid-template-columns:repeat(2,auto);justify-content:center;gap:1vh 1.6vh}
+#cd .zp .chip{font-size:2.3vh}
+#fin .h.cdp{display:block;padding:0;gap:0;position:relative;overflow:hidden;background:#0b3d33}
+#fin .bgb{position:absolute;inset:-6%;background:url(countdown_bg.jpg) center/cover;filter:blur(16px) brightness(.85)}
+#fin .sq{position:relative;height:100%;aspect-ratio:1/1;margin:0 auto;background:#d7f1ec url(countdown_bg.jpg) center/100% 100% no-repeat}
+#fin .zp{position:absolute;left:8%;right:8%;top:44%;height:25%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.6vh;text-align:center}
+#fin .zl{position:absolute;left:24%;width:52%;top:75.6%;height:8.4%;display:flex;align-items:center;justify-content:center;font-size:3.2vh;font-weight:700;color:#ffe08a}
+#fin .qt{font-size:3.4vh;line-height:1.9;font-weight:500;color:#064e3b;padding:0 3%}
+#fin .thx{font-size:6vh;font-weight:700;color:#064e3b;text-shadow:none}
+#rot{display:none;position:fixed;inset:0;z-index:99;background:#07142b;color:#fff;align-items:center;justify-content:center;flex-direction:column;gap:2vh;text-align:center;direction:rtl;font-size:5vw;padding:0 8vw}#rot small{font-size:3.4vw;opacity:.75}@media (orientation:portrait){#rot{display:flex}}
+</style>
+</head>
+<body>
+<div id="rot"><div style="font-size:14vw">📱↻</div><div>قم بتدوير الجوال بشكل أفقي</div><small>تأكد أن «قفل اتجاه الشاشة» مغلق في مركز التحكم</small></div>
+<div id="menu">
+  <h1>تجربة الرؤية – جمعية عيون طيبة</h1>
+  <p>ستبدأ برؤية طبيعية وواضحة، ثم تتحول الرؤية تدريجيًا لتعيش ما يعانيه مرضى العيون.</p>
+  <div class="box">
+    <label>١) اختر الفيديو (أو صورة) من جوالك
+      <input type="file" id="file" accept="video/*,image/*"></label>
+    <p style="font-size:.9rem">يفضّل مشهد طبيعي مفتوح فيه ألوان وأضواء وكتابات واضحة.</p>
+    <label><input type="checkbox" id="vr" checked> وضع النظارة (الشاشة مقسومة نصفين، نصف لكل عين)</label>
+  </div>
+  <button id="go">٢) ابدأ التجربة</button>
+  <p style="font-size:.85rem">للخروج أثناء التجربة: انقر مرتين على الشاشة.</p>
+</div>
+
+<div id="stage"></div>
+<div id="end"><h1>انتهت التجربة</h1><p>هذا جزء بسيط مما يعيشه مرضى العيون يوميًا. الفحص المبكر يحمي البصر.</p><button id="again">إعادة التجربة</button></div>
+
+<script>
+const NORMAL_SEC=5,DISEASE_SEC=10; // الرؤية الطبيعية 5 ثوانٍ، وكل مرض 10 ثوانٍ (تمتد تلقائيًا إن كان التعليق أطول)
+const PH=[["",NORMAL_SEC,"الرؤية الطبيعية"],["cat",DISEASE_SEC,"المياه البيضاء (الساد)"],["",NORMAL_SEC,"الرؤية الطبيعية"],["glau",DISEASE_SEC,"الجلوكوما (الزرق)"],["",NORMAL_SEC,"الرؤية الطبيعية"],["ret",DISEASE_SEC,"انفصال الشبكية"],["",NORMAL_SEC,"الرؤية الطبيعية"],["mac",DISEASE_SEC,"التنكس البقعي"]];
+const stage=document.getElementById("stage"),endEl=document.getElementById("end");
+let video=null,running=false,t0=0,idx=-1,eyes=[];
+
+function makeEye(){
+  const e=document.createElement("div");e.className="eye";
+  let f="";for(let i=0;i<7;i++)f+='<span style="left:'+(15+Math.random()*70)+'%;top:'+(15+Math.random()*65)+'%;animation-delay:-'+(Math.random()*6)+'s"></span>';
+  e.innerHTML='<canvas></canvas><div class="fx haze"></div><div class="fx tunnel"></div><div class="fx macula"></div><div class="fx floaters">'+f+'</div><div class="curtain"></div><div class="cap"></div><img class="logo" src="logo.png" alt="">';const lg=e.querySelector(".logo");lg.style[LOGO_POS]="8%";lg.onerror=function(){this.style.display="none"};
+  return e;
+}
+function demo(c,w,h,t){
+  const g=c.createLinearGradient(0,0,0,h*.6);g.addColorStop(0,"#4aa3ff");g.addColorStop(1,"#cfe9ff");
+  c.fillStyle=g;c.fillRect(0,0,w,h);
+  c.fillStyle="#fff7c2";c.beginPath();c.arc(w*.78,h*.18,h*.07,0,7);c.fill();
+  c.fillStyle="#fff";for(let i=0;i<4;i++){const x=((t*20+i*w/3)%(w*1.3))-w*.15,y=h*(.1+i*.07);c.beginPath();c.ellipse(x,y,w*.1,h*.03,0,0,7);c.ellipse(x+w*.07,y+4,w*.07,h*.025,0,0,7);c.fill()}
+  c.fillStyle="#3f9b46";c.beginPath();c.moveTo(0,h*.6);c.quadraticCurveTo(w*.3,h*.42,w*.6,h*.6);c.quadraticCurveTo(w*.85,h*.5,w,h*.6);c.lineTo(w,h);c.lineTo(0,h);c.fill();
+  c.fillStyle="#555";c.beginPath();c.moveTo(w*.42,h*.6);c.lineTo(w*.58,h*.6);c.lineTo(w*.85,h);c.lineTo(w*.15,h);c.fill();
+  c.fillStyle="#fff";for(let i=0;i<6;i++){const k=((i+t*.6)%6)/6,y=h*.6+k*k*h*.4,ww=3+k*14;c.fillRect(w*.5-ww/2,y,ww,8+k*30)}
+  c.fillStyle="#d33";c.fillRect(w*.1,h*.52,w*.04,h*.1);c.fillStyle="#2a8";c.beginPath();c.arc(w*.12,h*.5,h*.07,0,7);c.fill();
+  c.fillStyle="#000";c.font=(h*.05)+"px sans-serif";c.textAlign="center";c.fillText("STOP 25 40 70",w*.5,h*.95);
+}
+function cover(c,v,w,h){const vw=v.videoWidth||v.naturalWidth||w,vh=v.videoHeight||v.naturalHeight||h,s=Math.max(w/vw,h/vh);c.drawImage(v,(w-vw*s)/2,(h-vh*s)/2,vw*s,vh*s)}
+function setPhase(i){
+  idx=i;stage.classList.remove("cat","glau","ret","mac");
+  if(PH[i][0])stage.classList.add(PH[i][0]);
+  eyes.forEach(e=>e.querySelector(".cap").textContent=PH[i][2]);
+}
+function loop(now){
+  if(!running)return;
+  const el=(now-t0)/1000;let a=0,i=0;
+  for(;i<PH.length;i++){if(el<a+PH[i][1])break;a+=PH[i][1]}
+  if(i>=PH.length){finish();return}
+  if(i!==idx)setPhase(i);
+  eyes.forEach(e=>{const cv=e.querySelector("canvas"),c=cv.getContext("2d");
+    if(video&&video.paused&&video.srcObject&&video.play)video.play().catch(()=>{});if(video&&(video.readyState>1||video.complete))cover(c,video,cv.width,cv.height);else{c.fillStyle="#000";c.fillRect(0,0,cv.width,cv.height)}});
+  requestAnimationFrame(loop);
+}
+function finish(){running=false;if(video&&video.pause)video.pause();if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});stage.classList.remove("on");endEl.classList.add("on")}
+async function start(){
+  endEl.classList.remove("on");
+  const f=document.getElementById("file").files[0];
+  if(!f&&!video){alert("اختر فيديو أو صورة أولًا");return}
+  if(f){if(f.type.startsWith("image")){video=new Image();video.src=URL.createObjectURL(f)}else{video=document.createElement("video");video.src=URL.createObjectURL(f);video.loop=true;video.playsInline=true}}
+  stage.innerHTML="";eyes=[makeEye(),makeEye()];eyes.forEach(e=>stage.appendChild(e));
+  stage.className="on"+(document.getElementById("vr").checked?"":" single");
+  document.getElementById("menu").style.display="none";
+  try{await stage.requestFullscreen();await screen.orientation.lock("landscape")}catch(e){}
+  eyes.forEach(e=>{const cv=e.querySelector("canvas"),r=e.getBoundingClientRect();cv.width=Math.max(320,Math.round((r.width||400)*.8));cv.height=Math.max(240,Math.round((r.height||300)*.8))});
+  if(video&&video.play){try{if(!video.srcObject)video.currentTime=0;await video.play()}catch(e){}}
+  idx=-1;running=true;t0=performance.now();requestAnimationFrame(loop);
+}
+document.getElementById("go").onclick=start;
+document.getElementById("again").onclick=start;
+stage.addEventListener("dblclick",()=>{running=false;if(video&&video.pause)video.pause();if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});stage.classList.remove("on");document.getElementById("menu").style.display="block"});
+
+const USE_CAMERA=true;
+const v0=document.createElement("video");v0.src="scene.mp4";v0.loop=true;v0.playsInline=true;video=v0;v0.setAttribute("playsinline","");v0.style.cssText="position:fixed;left:0;top:0;width:4px;height:4px;opacity:.01;pointer-events:none;z-index:-1";document.body.appendChild(v0);
+let camMsg="";
+let camVideo=null;
+async function initCam(){
+ if(camVideo){video=camVideo;camMsg="الكاميرا تعمل مباشرة";return}
+ if(!USE_CAMERA)return;
+ try{
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error("unsupported");
+  const st=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1280},height:{ideal:720}},audio:false});
+  const cv=document.createElement("video");cv.muted=true;cv.autoplay=true;cv.playsInline=true;cv.setAttribute("playsinline","");
+  cv.style.cssText="position:fixed;left:0;top:0;width:4px;height:4px;opacity:.01;pointer-events:none;z-index:-1";
+  document.body.appendChild(cv);cv.srcObject=st;await cv.play();video=camVideo=cv;camMsg="الكاميرا تعمل مباشرة";
+ }catch(e){video=v0;camMsg="تعذّر فتح الكاميرا ("+(e.name||"خطأ")+")، سيُستخدم الفيديو"}
+}
+const cd=document.createElement("div");cd.id="cd";document.body.appendChild(cd);
+const APP_TITLE="تجربة الرؤية",APP_SUB="محاكاة ما يعانيه مرضى العيون";
+const TOP_TITLE="هذه تجربة محاكاة لمرضى العيون";
+const DISEASES=["المياه البيضاء","الجلوكوما","انفصال الشبكية","التنكس البقعي"];
+const END_MSG="بإحسانكم يبصرون النور",ORG="جمعية عيون طيبة الخيرية";
+const CD_TOTAL=10;
+const CD_PILL="ضع الجوال في النظارة";
+function scr(frame,pill){return '<div class="h cdp"><div class="bgb"></div><div class="sq"><div class="zp">'+frame+'</div><div class="zl">'+pill+'</div></div></div>'}
+new Image().src="countdown_bg.jpg";
+let AC=null;
+function tick(n){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume();
+ const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain(),last=n===0;
+ o.type=last?"sine":"triangle";o.frequency.value=last?1760:(n%2?1500:1100);
+ g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(last?.5:.7,t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+(last?.5:.06));
+ o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+(last?.55:.08))}catch(e){}}
+function unlockMedia(){
+ try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(e){}
+ [...Object.values(AU),endAudio,msgAudio,v0].forEach(a=>{try{a.muted=true;const pr=a.play();if(pr&&pr.then)pr.then(()=>{a.pause();a.currentTime=0;a.muted=false}).catch(()=>{a.muted=false})}catch(e){}})}
+function countdown(n,tot){tot=tot||n;tick(n);
+ document.getElementById("menu").style.display="none";endEl.classList.remove("on");fin.style.display="none";opts.style.display="none";cd.style.display="flex";
+ const C=2*Math.PI*54,off=C*(1-n/tot);
+ const chips=DISEASES.map((d,k)=>'<span class="chip c'+k+'">'+d+'</span>').join("");
+ const h='<div class="h cdp"><div class="bgb"></div><div class="sq">'
+  +'<div class="zr"><svg viewBox="0 0 120 120"><circle class="rb" cx="60" cy="60" r="54"/><circle class="rp" cx="60" cy="60" r="54" stroke-dasharray="'+C+'" stroke-dashoffset="'+off+'"/></svg><b>'+n+'</b></div>'
+  +'<div class="zp"><div class="bt">'+TOP_TITLE+'</div><div class="chips">'+chips+'</div></div>'
+  +'<div class="zl">'+CD_PILL+'</div><div class="zc">'+camMsg+'</div></div></div>';
+ cd.innerHTML=h+h;
+ if(n>0)setTimeout(()=>countdown(n-1,tot),1000);else{cd.style.display="none";start()}}
+const fin=document.createElement("div");fin.id="fin";document.body.appendChild(fin);
+const NAR={cat:"cataract.mp3",glau:"glaucoma.mp3",ret:"retina.mp3",mac:"macular.mp3",normal:"normal.mp3"};
+const AU={};
+function duck(on){try{if(video&&"volume" in video)video.volume=on?.2:1}catch(e){}}
+for(const k in NAR){const a=new Audio(NAR[k]);a.preload="auto";
+ a.onloadedmetadata=()=>{const kk=k==="normal"?"":k;if(isFinite(a.duration))PH.forEach(p=>{if(p[0]===kk)p[1]=Math.max(p[1],a.duration+1.5)})};
+ a.onended=()=>duck(false);AU[k]=a}
+const endAudio=new Audio("end.mp3");endAudio.preload="auto";endAudio.onended=()=>duck(false);
+function stopAll(){for(const k in AU){AU[k].pause()}endAudio.pause();try{msgAudio.pause()}catch(e){}duck(false)}
+function narrate(k){stopAll();const a=AU[k];if(a){a.currentTime=0;duck(true);a.play().catch(()=>duck(false))}}
+const _sp=setPhase;setPhase=function(i){_sp(i);if(!PH[i][0]&&video&&!video.srcObject){try{video.currentTime=0}catch(e){}}narrate(PH[i][0]||"normal")};
+const _f=finish;
+const MSG_TEXT="ثوانٍ قليلة عشتَها الآن، هي حياةٌ كاملة عند من فقدوا الرؤية. فكن أنت سببًا في أن يبصروا.";
+const msgAudio=new Audio("message.mp3");msgAudio.preload="auto";
+const LG='<img class="lgc" src="logo.png" alt="" onerror="this.style.display=\'none\'">';
+function showEnd(){
+ const h=scr('<div class="thx">'+END_MSG+'</div><div class="sep"></div>',ORG);fin.innerHTML=h+h;fin.style.display="flex";
+ let shown=false;const toOpts=()=>{if(shown)return;shown=true;setTimeout(()=>{fin.style.display="none";opts.style.display="flex"},2500)};
+ endAudio.onended=toOpts;endAudio.currentTime=0;endAudio.play().catch(()=>setTimeout(toOpts,5500));
+ setTimeout(toOpts,90000)}
+finish=function(){_f();stopAll();endEl.classList.remove("on");
+ const h=scr('<div class="qt">'+MSG_TEXT+'</div><div class="sep"></div>',ORG);fin.innerHTML=h+h;fin.style.display="flex";
+ let moved=false;const go=()=>{if(moved)return;moved=true;showEnd()};
+ msgAudio.onended=go;msgAudio.onerror=()=>setTimeout(go,6000);
+ msgAudio.currentTime=0;msgAudio.play().catch(()=>setTimeout(go,6000));
+ setTimeout(go,90000)};
+const LOGO_POS="right"; // "right" أو "left"
+const pick=document.createElement("div");pick.id="pick";document.body.appendChild(pick);
+const opts=document.createElement("div");opts.id="opts";document.body.appendChild(opts);
+pick.innerHTML=LG.replace('class="lgc"','class="lgc big"')+'<div class="pt">'+APP_TITLE+'</div><div class="ps">'+APP_SUB+'</div><div class="pb"><button id="bV" class="card"><span class="ic">🎬</span><span class="tt">فيديو افتراضي</span><span class="ds">مشهد جاهز داخل التطبيق</span></button><button id="bC" class="card"><span class="ic">📷</span><span class="tt">الكاميرا المباشرة</span><span class="ds">تعرض ما أمامك الآن</span></button></div><div class="po">'+ORG+'</div>';
+opts.innerHTML=LG+'<div class="ot">انتهت التجربة</div><div class="os">شكرًا لمشاركتك</div><div class="pb"><button id="bR" class="card"><span class="tt">البدء من جديد</span></button><button id="bX" class="card"><span class="tt">إنهاء</span></button></div>';
+document.getElementById("bV").onclick=()=>{unlockMedia();video=v0;pick.style.display="none";countdown(CD_TOTAL)};
+document.getElementById("bC").onclick=async()=>{unlockMedia();pick.style.display="none";await initCam();countdown(CD_TOTAL)};
+document.getElementById("bR").onclick=()=>{opts.style.display="none";pick.style.display="flex"};
+document.getElementById("bX").onclick=()=>{try{Android.exit()}catch(e){window.close();opts.style.display="none";pick.style.display="flex"}};
+</script>
+</body>
+</html>

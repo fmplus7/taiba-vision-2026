@@ -1,0 +1,8 @@
+الملفات التي يجب إضافتها بجانب index.html قبل الرفع (انسخها من مجلد assets في مشروع أندرويد):
+1) scene.mp4          (فيديو المشهد - يفضل أقل من 10 ميغابايت: 720p و 3 ميغابت/ث)
+2) logo.png           (الشعار بخلفية شفافة)
+3) normal.mp3  cataract.mp3  glaucoma.mp3  retina.mp3  macular.mp3  message.mp3  end.mp3
+4) مجلد fonts  فيه: Tajawal-Regular.ttf  و Tajawal-Bold.ttf
+
+الموجود أصلًا: index.html  countdown_bg.jpg  manifest.webmanifest  icon-180.png  icon-192.png  icon-512.png
+(الأيقونات الحالية مؤقتة مقصوصة من الصورة، يمكنك استبدالها بشعارك بنفس الأسماء والمقاسات)
